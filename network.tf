@@ -63,6 +63,14 @@ resource "azurerm_subnet_network_security_group_association" "mgmt_nsg_associati
   network_security_group_id = azurerm_network_security_group.mgmt_nsg.id
 }
 
+resource "azurerm_public_ip" "appgw_public_ip" {
+  name                = "appgw-public-ip"
+  location            = azurerm_resource_group.hub_rg.location
+  resource_group_name = azurerm_resource_group.hub_rg.name
+  allocation_method   = "Static"
+  sku                 = "Standard"
+}
+
 # Route Table for Management Subnet with default route to Azure Firewall
 resource "azurerm_route_table" "mgmt_route_table" {
   name                = "mgmt-route-table"
@@ -72,11 +80,13 @@ resource "azurerm_route_table" "mgmt_route_table" {
 
 resource "azurerm_route" "default_to_fw" {
   name                    = "default-route"
-  route_table_id          = azurerm_route_table.mgmt_route_table.id
+  resource_group_name     = azurerm_resource_group.mgmt_rg.name
+  route_table_name        = azurerm_route_table.mgmt_route_table.name
   address_prefix          = "0.0.0.0/0"
   next_hop_type           = "VirtualAppliance"
   next_hop_in_ip_address  = var.fw_ip_address
 }
+
 
 # Associate Route Table to Management Subnet
 resource "azurerm_subnet_route_table_association" "mgmt_route_table_association" {
