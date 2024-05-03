@@ -1,6 +1,12 @@
+variable "environment" {
+  description = "The Azure environment to use for the deployment."
+  type        = string
+  default     = "usgovernment"  // Default to Azure US Government Cloud
+}
+
 variable "location" {
     description = "The Azure Region in which all resources in this example should be created."
-    default     = "East US"
+    default     = "usgovarizona"
   }
   
   variable "resource_group_name" {
