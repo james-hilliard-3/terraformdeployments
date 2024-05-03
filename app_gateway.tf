@@ -1,13 +1,3 @@
-# Create a public IP for the Application Gateway
-resource "azurerm_public_ip" "appgw_public_ip" {
-  name                = "appgw-public-ip"
-  location            = azurerm_resource_group.hub_rg.location
-  resource_group_name = azurerm_resource_group.hub_rg.name
-  allocation_method   = "Static"
-  sku                 = "Standard"
-}
-
-# Application Gateway with WAF
 resource "azurerm_application_gateway" "appgw" {
   name                = "example-appgw"
   location            = azurerm_resource_group.hub_rg.location
@@ -43,6 +33,15 @@ resource "azurerm_application_gateway" "appgw" {
     name = "backend-pool"
   }
 
+  backend_http_settings {
+    name                  = "appgw-http-settings"
+    cookie_based_affinity = "Disabled"
+    port                  = 80
+    protocol              = "Http"
+    request_timeout       = 20
+    pick_host_name_from_backend_address = false
+  }
+
   http_listener {
     name                           = "http-listener"
     frontend_ip_configuration_name = "public-ip-configuration"
@@ -55,7 +54,8 @@ resource "azurerm_application_gateway" "appgw" {
     rule_type                  = "Basic"
     http_listener_name         = "http-listener"
     backend_address_pool_name  = "backend-pool"
-    backend_http_settings_name = "app-gateway-http-settings"
+    backend_http_settings_name = "appgw-http-settings"
+    priority                   = 100  # Define priority here
   }
 
   waf_configuration {
